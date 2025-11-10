@@ -110,7 +110,7 @@ class Scraper:
                 rating_aria_label = block.find_element(By.CSS_SELECTOR, "span.kvMYJc[role='img']").get_attribute("aria-label")
                 # Simple parsing to extract the number from the string
                 rating_match = re.search(r"(\d+\.?\d*)", rating_aria_label)
-                rating = float(rating_match.group(1)) if rating_match else "N/A"
+                rating = int(rating_match.group(1)) if rating_match else "N/A"
             except NoSuchElementException:
                 rating = "N/A"
 
