@@ -125,18 +125,54 @@ class Scraper:
             except NoSuchElementException:
                 review_text = "N/A"
 
+            additional_info = self.extract_additional_info(block)
+
             reviews.append({
                 "user_name": user_name,
                 "rating": rating,
                 "review_date": review_date,
-                "review_text": review_text
+                "review_text": review_text,
+                "additional_info": additional_info 
             })
+
             #DEBUG
-            #print(f"Extracted review by {user_name}: {rating} stars on {review_date} - {review_text[:50]}...")
+            #print(f"Extracted review by {user_name}: {rating} stars on {review_date} - {review_text[:50]}... - {additional_info}")
 
         print(f"Extracted {len(reviews)} reviews.")
         return reviews
 
+    def extract_additional_info(self, block):
+        """
+        Extracts additional information from review block like price, food rating, service rating, etc.
+        Returns a formatted string with all found information.
+        """
+        additional_info = []
+        
+        try:
+            info_elements = block.find_elements(By.CSS_SELECTOR, "div.PBK6be")
+            
+            for element in info_elements:
+                try:
+                    text = element.text.strip()
+                    if text:
+                        # Format the text properly (handle bold labels and values)
+                        lines = text.split('\n')
+                        if len(lines) >= 2:
+                            # Case: Label on first line, value on second
+                            label = lines[0].replace(':', '').strip()
+                            value = lines[1].strip()
+                            additional_info.append(f"{label}: {value}")
+                        else:
+                            # Case: Single line with format "Label: value"
+                            additional_info.append(text)
+                except NoSuchElementException:
+                    continue
+                    
+        except NoSuchElementException:
+            pass
+        
+        return '\n'.join(additional_info)
+    
     def scrape_reviews(self, url, max_scroll_attempts=1000):
         """
         Main method to orchestrate the scraping of a given Google Maps place URL.
